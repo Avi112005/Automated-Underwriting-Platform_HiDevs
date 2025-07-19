@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Automated Underwriting Platform</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/png" href="https://img.icons8.com/fluency/48/insurance.png">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1e40af;
+      --danger: #e11d48;
+      --success: #16a34a;
+      --border: #e5e7eb;
+      --bg: #f8fafc;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      font-family: 'Segoe UI', Arial, sans-serif;
+      color: #222;
+    }
+    .header {
+      background: var(--primary-dark);
+      padding: 20px 0;
+      text-align: center;
+      color: #fff;
+      font-size: 2rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 32px;
+      box-shadow: 0 2px 12px #2221;
+    }
+    .container {
+      background: #fff;
+      max-width: 470px;
+      margin: 32px auto 0;
+      border-radius: 14px;
+      padding: 28px 32px 34px;
+      box-shadow: 0 6px 36px #3333;
+      position: relative;
+    }
+    .form-group {
+      margin-bottom: 18px;
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: #345;
+      letter-spacing: .1px;
+    }
+    input[type="text"], select {
+      border: 1.5px solid var(--border);
+      border-radius: 5px;
+      padding: 8px;
+      font-size: 1rem;
+      background: #f5f8ff;
+      transition: border .2s;
+    }
+    input:focus, select:focus { outline: none; border-color: var(--primary-dark); }
+    input[aria-invalid="true"] { border-color: var(--danger) !important; background: #fff0f3; }
+    .field-error {
+      color: var(--danger);
+      font-size: 0.93rem;
+      margin-top: 2px;
+    }
+    .drag-drop-zone {
+      border: 2.5px dashed var(--primary);
+      padding: 22px 6px;
+      border-radius: 10px;
+      background: #f1f5ff;
+      color: #415099;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 10px;
+      transition: background .15s;
+    }
+    .drag-drop-zone.active {
+      background: #deedfd;
+      color: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+    .file-list {
+      margin: 0 0 10px 0;
+      padding: 0;
+      list-style: disc inside none;
+      font-size: 0.98rem;
+      color: #555a;
+    }
+    .progress-bar-wrap {
+      height: 8px;
+      width: 100%;
+      border-radius: 5px;
+      background: #e5e5f0;
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #60a5fa);
+      transition: width 0.35s;
+    }
+    .submit-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 12px 0;
+      font-size: 1.08rem;
+      width: 100%;
+      margin-top: 9px;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: .3px;
+      transition: background .13s, box-shadow .13s;
+      box-shadow: 0 2px 8px #2563eb11;
+    }
+    .submit-btn:disabled { background: #93c5fd; cursor: not-allowed;}
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 44px;
+      transform: translateX(-50%);
+      min-width: 230px;
+      background: #222;
+      color: #fafafa;
+      padding: 11px 23px;
+      border-radius: 22px;
+      font-size: 1.05rem;
+      box-shadow: 0 2px 14px #2222;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s;
+      z-index: 1001;
+    }
+    .toast.show { opacity: 1; pointer-events: auto;}
+    .toast.success { background: var(--success);}
+    .toast.error { background: var(--danger);}
+    .result-card {
+      margin-top: 26px;
+      background: #f2fafe;
+      border-radius: 12px;
+      padding: 16px 18px 16px;
+      box-shadow: 0 1px 6px #1183f015;
+    }
+    .risk-label {
+      display: inline-block;
+      margin-bottom: 9px;
+      padding: 3px 17px;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-right: 12px;
+      background: #444;
+    }
+    .risk-label.low { background: #34d399; }
+    .risk-label.medium { background: #facc15; color: #674e02;}
+    .risk-label.high { background: #fb7185; }
+    .result-title { font-size: 1.18rem; font-weight: 600; margin-bottom: 7px;}
+    .result-details { color: #233; font-size: 1.04rem;}
+    @media (max-width: 600px) {
+      .container { max-width: 95vw; padding: 10vw 4vw; }
+      .header { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+  <img src="logo.png" alt="Logo" style="vertical-align: bottom; height: 42px; margin-right: 12px;">
+  Automated Underwriting Platform
+</div>
+
+  </div>
+  <div class="container" aria-labelledby="platformTitle">
+    <form id="underwritingForm" autocomplete="off" novalidate>
+      <div class="form-group">
+        <label for="report">Appraisal Report (PDF, JPG, PNG):</label>
+        <div class="drag-drop-zone" id="reportZone" tabindex="0">
+          <span id="reportZoneText">Drag & drop OR click to select report...</span>
+          <input type="file" id="report" name="report" accept=".pdf,.jpg,.jpeg,.png"
+            style="display:none" required />
+        </div>
+        <div class="field-error" id="reportError"></div>
+      </div>
+      <div class="form-group">
+        <label for="images">Property Images (JPG, PNG, multiple allowed):</label>
+        <div class="drag-drop-zone" id="imagesZone" tabindex="0">
+          <span id="imagesZoneText">Drag & drop OR click to select images...</span>
+          <input type="file" id="images" name="images" accept=".jpg,.jpeg,.png" multiple
+            style="display:none" required />
+        </div>
+        <ul class="file-list" id="imagesList"></ul>
+        <div class="field-error" id="imagesError"></div>
+      </div>
+      <div class="form-group">
+        <label for="address">Property Address:</label>
+        <input type="text" id="address" name="address" aria-required="true" required />
+        <div class="field-error" id="addressError"></div>
+      </div>
+      <div class="form-group">
+        <label for="owner">Owner Name:</label>
+        <input type="text" id="owner" name="owner" aria-required="true" required />
+        <div class="field-error" id="ownerError"></div>
+      </div>
+      <div class="form-group">
+        <label for="propertyType">Property Type:</label>
+        <select id="propertyType" name="propertyType" aria-required="true" required>
+          <option value="">Select...</option>
+          <option value="Residential">Residential</option>
+          <option value="Commercial">Commercial</option>
+          <option value="Industrial">Industrial</option>
+        </select>
+<div class="field-error" id="propertyTypeError"></div>
+      </div>
+
+      <div class="progress-bar-wrap" style="display:none">
+        <div class="progress-bar" id="progressBar" style="width:0"></div>
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Submit For Analysis</button>
+    </form>
+    <div id="result"></div>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script>
+    // Utility functions
+    function showToast(msg, type='') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = ('toast ' + type + ' show').trim();
+      setTimeout(() => toast.className = "toast", 2600);
+    }
+
+    // Drag & Drop for REPORT
+    const reportZone = document.getElementById('reportZone');
+    const reportInput = document.getElementById('report');
+    reportZone.addEventListener('click', ()=>reportInput.click());
+    reportZone.addEventListener('keydown', (e)=>{ if(["Enter"," "].includes(e.key)) reportInput.click(); });
+    reportZone.addEventListener('dragover',e=>{ e.preventDefault(); reportZone.classList.add('active');});
+    reportZone.addEventListener('dragleave',()=>reportZone.classList.remove('active'));
+    reportZone.addEventListener('drop',e=>{
+      e.preventDefault();
+      reportZone.classList.remove('active');
+      const file = e.dataTransfer.files[0];
+      reportInput.files = new DataTransfer();
+      if(file) reportInput.files.items.add(file);
+      document.getElementById('reportZoneText').innerHTML = file ? `<b>${file.name}</b>` : "No file";
+    });
+    reportInput.addEventListener('change',()=>{
+      document.getElementById('reportZoneText').innerHTML =
+        reportInput.files.length ? `<b>${reportInput.files[0].name}</b>` : "Drag & drop OR click to select report...";
+    });
+
+    // Drag & Drop for IMAGES
+    const imagesZone = document.getElementById('imagesZone');
+    const imagesInput = document.getElementById('images');
+    imagesZone.addEventListener('click', ()=>imagesInput.click());
+    imagesZone.addEventListener('keydown', (e)=>{ if(["Enter"," "].includes(e.key)) imagesInput.click(); });
+    imagesZone.addEventListener('dragover',e=>{ e.preventDefault(); imagesZone.classList.add('active');});
+    imagesZone.addEventListener('dragleave',()=>imagesZone.classList.remove('active'));
+    imagesZone.addEventListener('drop',e=>{
+      e.preventDefault();
+      imagesZone.classList.remove('active');
+      imagesInput.files = new DataTransfer();
+      for(let f of e.dataTransfer.files) imagesInput.files.items.add(f);
+      renderImageList();
+    });
+    imagesInput.addEventListener('change', renderImageList);
+
+    function renderImageList() {
+      const ul = document.getElementById('imagesList');
+      ul.innerHTML = "";
+      [...imagesInput.files].forEach(file => {
+        const li = document.createElement('li');
+        li.textContent = file.name + (file.size ? ` (${(file.size/1024).toFixed(1)} KB)` : '');
+        ul.appendChild(li);
+      });
+      document.getElementById('imagesZoneText').innerHTML =
+        imagesInput.files.length ? `<b>${imagesInput.files.length} file(s) selected</b>` : "Drag & drop OR click to select images...";
+    }
+
+    // Inline validation
+    function validateField(id, validator, errMsg) {
+      const el = document.getElementById(id);
+      if (!validator(el.value)) {
+        el.setAttribute("aria-invalid", "true");
+        document.getElementById(id+"Error").textContent = errMsg;
+        return false;
+      } else {
+        el.removeAttribute("aria-invalid");
+        document.getElementById(id+"Error").textContent = "";
+        return true;
+      }
+    }
+    function validateForm() {
+      let ok = true;
+      if(!reportInput.files[0]) {
+        document.getElementById('reportError').textContent = "Upload your report file!";
+        ok = false;
+      } else document.getElementById('reportError').textContent = "";
+      if(imagesInput.files.length===0) {
+        document.getElementById('imagesError').textContent = "Upload property image(s)!";
+        ok = false;
+      } else document.getElementById('imagesError').textContent = "";
+      ok &= validateField('address', v=>v.trim().length>0, "Address is required!");
+      ok &= validateField('owner', v=>v.trim().length>0, "Owner name is required!");
+      ok &= validateField('propertyType', v=>!!v, "Select property type!");
+      return !!ok;
+    }
+
+    // Submit handler
+    document.getElementById('underwritingForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      if (!validateForm()) { showToast("Please check your inputs.", "error"); return; }
+      showResultCard(""); // clear
+      document.getElementById('submitBtn').disabled = true;
+      showProgress(0);
+      showToast("Uploading & analyzing...", "");
+
+      const formData = new FormData();
+      formData.append('report', reportInput.files[0]);
+      for (const img of imagesInput.files) { formData.append('images', img); }
+      formData.append('address', document.getElementById('address').value);
+      formData.append('owner', document.getElementById('owner').value);
+      formData.append('propertyType', document.getElementById('propertyType').value);
+
+      // Simulate progress (actual upload progress requires backend support)
+      let i = 0, intv = setInterval(()=>{ showProgress(i+=12); },120);
+      try {
+        const res = await fetch('http://localhost:8000/underwrite', {
+          method: 'POST',
+          body: formData,
+        });
+        clearInterval(intv); showProgress(100);
+        if (!res.ok) throw new Error("Server error");
+
+        const data = await res.json();
+        showToast('Analysis complete!', 'success');
+        showResultCard(data);
+      } catch (err) {
+        clearInterval(intv); showProgress(0);
+        showToast("Error: "+err.message, "error");
+        showResultCard({error: err.message});
+      }
+      document.getElementById('submitBtn').disabled = false;
+    });
+
+    function showProgress(pct) {
+      const barWrap = document.querySelector('.progress-bar-wrap');
+      const bar = document.getElementById('progressBar');
+      if (!barWrap) return;
+      if (pct===0||pct>=100) barWrap.style.display='none';
+      else barWrap.style.display='block';
+      bar.style.width = pct+'%';
+    }
+
+    function showResultCard(data) {
+      const div = document.getElementById('result');
+      if (!data || typeof data!=='object') { div.innerHTML = ""; return; }
+      if (data.error) {
+        div.innerHTML = `<div class='result-card'><span class="risk-label high">Error</span>
+        <div class="result-details" style="color:#b01232">${data.error}</div></div>`; return;
+      }
+      let rk = (data.risk_level||"unknown").toLowerCase();
+      div.innerHTML = `
+        <div class='result-card'>
+          <span class="risk-label ${rk}">${data.risk_level||"-"}</span>
+          <span style="font-size:1.06rem;color:#555">Risk Score: <b>${data.risk_score??"-"}</b></span>
+          <div class="result-title" style="margin-top:12px;">${data.property_type||""} at ${data.address||""}</div>
+          <div class="result-details">${data.analysis_summary??""}</div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>

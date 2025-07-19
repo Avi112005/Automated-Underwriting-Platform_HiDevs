@@ -1,1 +1,7 @@
-# Add your project dependencies here
+fastapi
+uvicorn
+python-multipart
+pillow
+google-generativeai
+python-dotenv
+spacy
