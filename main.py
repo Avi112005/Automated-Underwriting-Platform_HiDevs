@@ -111,7 +111,7 @@ async def underwrite(
         avg_risk_score = min(max(avg_risk_score, 0.0), 1.0)
 
         risk_level = (
-            "Low" if avg_risk_score < 0.33 else
+            "Low" if avg_risk_score < 0.3 else
             "Medium" if avg_risk_score < 0.67 else
             "High"
         )

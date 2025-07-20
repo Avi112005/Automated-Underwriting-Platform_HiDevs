@@ -34,3 +34,20 @@ On Mac/Linux:
 python3 -m venv venv
 source venv/bin/activate
 ```
+### Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+Using spaCy, download the model:
+```bash
+python -m spacy download en_core_web_sm
+```
+### 4. Set Up Environment Variables
+Create a .env file in the root directory:
+```bash
+GEMINI_API_KEY=AIzaSyChXOYoFcK-aSpqAMzw0tC-xjYcurFloeA
+```
+### 5. Run the Backend (FastAPI)
+```bash
+python -m uvicorn main:app --reload
+```
