@@ -21,4 +21,16 @@ An AI-powered underwriting system that extracts appraisal data, analyzes risk fr
 ```bash
 git clone https://github.com/Avi112005/Automated-Underwriting-Platform_HiDevs.git
 cd Automated-Underwriting-Platform_HiDevs
+```
 
+### 2. Create and Activate Virtual Environment
+On Windows (PowerShell/VS Code):
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+On Mac/Linux:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
